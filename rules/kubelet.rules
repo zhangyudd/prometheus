@@ -1,0 +1,34 @@
+groups:
+- name: kubernetes-system-kubelet
+  rules:
+  - alert: K8S节点未就绪
+    annotations:
+      message: '{{ $labels.cluster }} 集群K8S节点 {{ $labels.node }} 处于未就绪状态已超过15分钟！'
+    expr: |
+      kube_node_status_condition{job="kube-state-metrics",condition="Ready",status="true"} == 0
+    for: 15m
+    labels:
+      severity: warning
+  - alert: K8S节点不可达
+    annotations:
+      message: '{{ $labels.cluster }} 集群K8S节点 {{ $labels.node }} 不可达，一部分工作负载已重新调度！'
+    expr: |
+      kube_node_spec_taint{job="kube-state-metrics",key="node.kubernetes.io/unreachable",effect="NoSchedule"} == 1
+    labels:
+      severity: warning
+  - alert: Kubelet节点存在过多容器组
+    annotations:
+      message: '{{ $labels.cluster }} 集群 Kubelet {{ $labels.node }} 节点已经运行了其总量的 {{ $value | humanizePercentage }} 的容器组再这个节点上！'
+    expr: |
+      max(max(kubelet_running_pod_count{job="kubelet", metrics_path="/metrics"}) by(instance,cluster) * on(instance,cluster) group_left(node) kubelet_node_name{job="kubelet", metrics_path="/metrics"}) by(node,cluster) / max(kube_node_status_capacity_pods{job="kube-state-metrics"}) by(node,cluster) > 0.95
+    for: 15m
+    labels:
+      severity: warning
+  - alert: Kubelet掉线
+    annotations:
+      message: '{{ $labels.cluster }} 集群 Prometheus Targets 无法发现 Kubelet {{ $labels.node }}！'
+    expr: |
+      absent(up{job="kubelet", metrics_path="/metrics"} == 1)
+    for: 15m
+    labels:
+      severity: critical

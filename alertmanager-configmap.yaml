@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: kube-system
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: EnsureExists
+data:
+  alertmanager.yml: |
+    global:
+      resolve_timeout: 5m
+      smtp_smarthost: 'smtp.163.com:465'
+      smtp_from: 'linuxzhangyu@163.com'
+      smtp_auth_username: 'linuxzhangyu@163.com'
+      smtp_auth_password: 'smtp163'
+      smtp_hello: '警报邮件'
+      smtp_require_tls: false
+    route:
+      # 传入警报分组在一起的标签
+      group_by: ['alertname', 'cluster', 'service']
+      # 这种方式可确保您为同一组获得多个警报，这些警报会在第一个通知上另一个批处理后立即开始触发
+      group_wait: 30s
+      # 发送第一个通知时，请等待'group_interval'发送一批为该组开始触发的新警报。
+      group_interval: 30s
+      # 如果已成功发送警报，请等待'repeat_interval'重新发送。
+      repeat_interval: 2h
+      receiver: default
+
+      #  所有上述属性都由所有子路由继承，并且可以在每个子路由上覆盖。
+      routes:
+      - receiver: email
+        group_wait: 10s
+        match:
+          team: ops
+
+    # 如果相同的警报已经很关键，我们使用它来静音任何警告级别的通知。
+    inhibit_rules:
+    - source_match:
+        severity: 'critical'
+      target_match:
+        severity: 'warning'
+      # 如果警报名称相同，则应用禁止。
+      equal: ['alertname', 'cluster', 'service']
+
+    receivers:
+    - name: 'default'
+      email_configs:
+      - to: 'edgar.z@foxmail.com'
+        send_resolved: true
+    - name: 'email'
+      email_configs:
+      - to: 'edgar.z@foxmail.com'
+        send_resolved: true
