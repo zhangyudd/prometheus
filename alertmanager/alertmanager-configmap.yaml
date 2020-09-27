@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: kube-system
+  labels:
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: EnsureExists
+data:
+  alertmanager.yml: |
+    global:
+      resolve_timeout: 5m
+      smtp_smarthost: 'smtp.163.com:465'
+      smtp_from: 'linuxzhangyu@163.com'
+      smtp_auth_username: 'linuxzhangyu@163.com'
+      smtp_auth_password: 'smtp163'
+      smtp_hello: '警报邮件'
+      smtp_require_tls: false
+    route:
+      group_by: ['alertname', 'cluster']
+      group_wait: 30s
+      group_interval: 30s
+      repeat_interval: 12h
+      receiver: default
+
+      routes:
+      - receiver: email
+        group_wait: 10s
+        match:
+          team: ops
+    receivers:
+    - name: 'default'
+      email_configs:
+      - to: 'edgar.z@foxmail.com'
+        send_resolved: true
+    - name: 'email'
+      email_configs:
+      - to: 'edgar.z@foxmail.com'
+        send_resolved: true
