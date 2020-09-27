@@ -62,6 +62,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+            - name: TZ
+              value: Asia/Shanghai
           securityContext:
               runAsUser: 0
               privileged: true

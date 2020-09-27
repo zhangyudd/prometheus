@@ -32,11 +32,6 @@ spec:
           protocol: TCP
         securityContext:
           runAsUser: 0
-        volumeMounts:
-        - mountPath: "/prometheus"
-          name: data
-        - mountPath: "/etc/prometheus"
-          name: config-volume
         resources:
           requests:
             cpu: 100m
@@ -44,6 +39,14 @@ spec:
           limits:
             cpu: 500m
             memory: 2500Mi
+        env:
+        - name: TZ
+          value: Asia/Shanghai        
+        volumeMounts:
+        - mountPath: "/prometheus"
+          name: data
+        - mountPath: "/etc/prometheus"
+          name: config-volume
       serviceAccountName: prometheus    
       volumes:
       - name: data

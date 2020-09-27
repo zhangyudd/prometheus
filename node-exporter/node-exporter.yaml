@@ -22,6 +22,9 @@ spec:
           protocol: TCP
           name: http
           hostPort: 9101
+        env:
+        - name: TZ
+          value: Asia/Shanghai
         volumeMounts:
         - mountPath: /host/proc
           name: proc
