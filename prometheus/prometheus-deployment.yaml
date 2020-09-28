@@ -23,7 +23,7 @@ spec:
         args:
         - "--config.file=/etc/prometheus/prometheus.yml"
         - "--storage.tsdb.path=/prometheus"
-        - "--storage.tsdb.retention=24h"
+        - "--storage.tsdb.retention=168h"
         - "--web.console.libraries=/etc/prometheus/console_libraries"
         - "--web.console.templates=/etc/prometheus/consoles"
         - "--web.enable-lifecycle"
@@ -34,24 +34,25 @@ spec:
           runAsUser: 0
         resources:
           requests:
-            cpu: 100m
-            memory: 100Mi
+            cpu: 10m
+            memory: 10Mi
           limits:
             cpu: 500m
-            memory: 2500Mi
+            memory: 2048Mi
         env:
         - name: TZ
           value: Asia/Shanghai        
         volumeMounts:
         - mountPath: "/prometheus"
-          name: data
+          name: prometheus-kube-system-disk
+          subPath: prometheus
         - mountPath: "/etc/prometheus"
           name: config-volume
       serviceAccountName: prometheus    
       volumes:
-      - name: data
-        hostPath:
-          path: /data/protest
+      - name: prometheus-kube-system-disk
+        persistentVolumeClaim:
+          claimName: prometheus-kube-system-disk
       - name: config-volume
         configMap:
           name: prometheus-config

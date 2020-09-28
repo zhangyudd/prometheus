@@ -24,11 +24,3 @@ groups:
     for: 15m
     labels:
       severity: warning
-  - alert: Kubelet掉线
-    annotations:
-      message: '{{ $labels.cluster }} 集群 Prometheus Targets 无法发现 Kubelet {{ $labels.node }}！'
-    expr: |
-      absent(up{job="kubelet", metrics_path="/metrics"} == 1)
-    for: 15m
-    labels:
-      severity: critical
