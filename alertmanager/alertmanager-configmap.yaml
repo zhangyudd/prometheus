@@ -13,7 +13,7 @@ data:
       smtp_smarthost: 'smtp.163.com:465'
       smtp_from: 'linuxzhangyu@163.com'
       smtp_auth_username: 'linuxzhangyu@163.com'
-      smtp_auth_password: 'smtp163'
+      smtp_auth_password: 'xxxx'
       smtp_hello: '警报邮件'
       smtp_require_tls: false
     route:
