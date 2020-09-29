@@ -42,10 +42,10 @@ spec:
         image: siriuszg/addon-resizer:1.8.4
         resources:
           limits:
-            cpu: 150m
+            cpu: 100m
             memory: 50Mi
           requests:
-            cpu: 150m
+            cpu: 10m
             memory: 50Mi
         env:
           - name: MY_POD_NAME
