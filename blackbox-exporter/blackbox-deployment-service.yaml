@@ -27,6 +27,13 @@ spec:
         - --log.level=info  # 日志级别，可以把级别调到 error
         ports:
         - containerPort: 9115
+        resources:
+          requests:
+            cpu: 10M
+            memory: 10M
+          limits:
+            cpu: 100M
+            memory: 100M
         volumeMounts:
         - name: config
           mountPath: /etc/blackbox_exporter
