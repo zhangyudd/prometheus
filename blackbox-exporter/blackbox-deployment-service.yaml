@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blackbox
+  namespace: kube-system
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: blackbox
+  strategy:
+    rollingUpdate:
+      maxSurge: 30%
+      maxUnavailable: 30%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: blackbox
+    spec:
+      containers:
+      - image: prom/blackbox-exporter:v0.16.0
+        name: blackbox
+        args:
+        - --config.file=/etc/blackbox_exporter/blackbox.yml # ConfigMap 中的配置文件
+        - --log.level=info  # 日志级别，可以把级别调到 error
+        ports:
+        - containerPort: 9115
+        volumeMounts:
+        - name: config
+          mountPath: /etc/blackbox_exporter
+      volumes:
+      - name: config
+        configMap:
+          name: blackbox-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blackbox
+  namespace: kube-system
+  labels:
+    app: prometheus-blackbox-exporter
+  annotations:
+    prometheus.io/scrape: 'true'
+spec:
+  selector:
+    app: blackbox
+  ports:
+  - port: 9115
+    targetPort: 9115
+
