@@ -10,3 +10,6 @@ annotation:
   prometheus.io/scrape: 'true'
   prometheus.io/tcp-probe: 'true'
   prometheus.io/tcp-probe-port: '80'
+
+
+grafana 展示图表 9965

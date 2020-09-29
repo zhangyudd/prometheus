@@ -29,8 +29,10 @@ spec:
         - containerPort: 9115
         resources:
           requests:
+            cpu: 10m
             memory: 10M
           limits:
+            cpu: 100m
             memory: 100M
         volumeMounts:
         - name: config
