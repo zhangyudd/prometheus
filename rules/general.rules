@@ -14,5 +14,6 @@ groups:
       message: |
         此警报旨在确认整个警报管道功能性的。这个警报始终处于触发状态，因此它应始终在Alertmanager中触发，并始终针对各类接收器发送。
     expr: vector(1)
+    for: 10h
     labels:
       severity: none
