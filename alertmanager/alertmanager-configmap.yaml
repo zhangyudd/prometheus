@@ -9,19 +9,19 @@ metadata:
 data:
   alertmanager.yml: |
     global:
-      resolve_timeout: 5m
+      resolve_timeout: 5m    # 处理超时时间，默认为5min
       smtp_smarthost: 'smtp.163.com:465'
       smtp_from: 'linuxzhangyu@163.com'
       smtp_auth_username: 'linuxzhangyu@163.com'
-      smtp_auth_password: 'xxxx'
+      smtp_auth_password: 'xxx'
       smtp_hello: '警报邮件'
       smtp_require_tls: false
     route:
       group_by: ['alertname', 'cluster']
-      group_wait: 30s
-      group_interval: 30s
-      repeat_interval: 12h
-      receiver: default
+      group_wait: 10s         # 最初即第一次等待多久时间发送一组警报的通知
+      group_interval: 10s     # 在发送新警报前的等待时间
+      repeat_interval: 1h     # 发送重复警报的周期 对于email配置中，此项不可以设置过低，否则将会由于邮件发送太多频繁，被smtp服务器拒绝
+      receiver: default       # 发送警报的接收者的名称，以下receivers name的名称
 
       routes:
       - receiver: email

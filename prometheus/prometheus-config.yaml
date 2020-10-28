@@ -6,8 +6,9 @@ metadata:
 data:
   prometheus.yml: |
     global:
-      scrape_interval:     30s
-      evaluation_interval: 30s
+      scrape_interval:     15s    # 默认15s 全局每次数据收集的间隔
+      evaluation_interval: 15s    # 规则扫描时间间隔是15秒，默认不填写是 1分钟
+      scrape_timeout: 5s          # 超时时间
     rule_files:
     - /prometheus/*.rules
     alerting:
