@@ -1,6 +1,14 @@
 groups:
 - name: general.rules
   rules:
+  - alert: InstanceDown
+    expr: up == 0
+    for: 1m #持续时间为1min
+    labels:
+      severity: error
+    annotations:
+      summary: "Instance {{ $labels.instance }} 停止工作"
+      description: "{{ $labels.instance }} job {{ $labels.job }} 已经停止1分钟以上."
   - alert: Target掉线
     annotations:
       message: '{{ $labels.cluster }} 集群命名空间 {{ $labels.namespace }} 中 {{ $labels.job }} 的 {{ printf "%.4g" $value }}% 个targets掉线！'

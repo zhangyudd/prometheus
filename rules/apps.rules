@@ -9,6 +9,15 @@ groups:
     for: 2m
     labels:
       severity: critical
+  - alert: KubePodCrashLooping
+    annotations:
+      message: Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container
+        }}) is restarting {{ printf "%.2f" $value }} times / 5 minutes.
+    expr: rate(kube_pod_container_status_restarts_total{job="kube-state-metrics",
+      namespace=~".*"}[5m]) * 60 * 5 > 0
+    for: 2m
+    labels:
+      severity: warning
   - alert: K8S容器组Terminated
     annotations:
       message: '{{ $labels.cluster }} 集群容器组 {{ $labels.namespace }}/{{ $labels.pod }} Terminated 原因是 {{ $labels.reason }}！'

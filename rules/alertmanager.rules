@@ -24,6 +24,6 @@ groups:
       alertmanager_cluster_members{job="alertmanager-main",namespace="monitoring"}
         != on (cluster,service) GROUP_LEFT()
       count by (cluster,service) (alertmanager_cluster_members{job="alertmanager-main",namespace="monitoring"})
-    for: 5m
+    for: 2m
     labels:
       severity: critical
