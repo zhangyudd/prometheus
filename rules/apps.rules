@@ -3,26 +3,26 @@ groups:
   rules:
   - alert: K8S容器组短时间内多次重启
     annotations:
-      message: '{{ $labels.cluster }} 集群容器组 {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) 在10分钟内重启了 {{ printf "%.2f" $value }} 次！'
+      message: '{{ $labels.cluster }} 集群容器组 {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) 在2分钟内重启了 {{ printf "%.2f" $value }} 次！'
     expr: |
       rate(kube_pod_container_status_restarts_total{job="kube-state-metrics"}[15m]) * 60 * 10 > 1
-    for: 10m
+    for: 2m
     labels:
       severity: critical
-#  - alert: K8S容器组Terminated
-#    annotations:
-#      message: '{{ $labels.cluster }} 集群容器组 {{ $labels.namespace }}/{{ $labels.pod }} Terminated 原因是 {{ $labels.reason }}！'
-#    expr: |
-#      kube_pod_container_status_terminated_reason{reason!="Completed"} > 0
-#    for: 15m
-#    labels:
-#      severity: warning
+  - alert: K8S容器组Terminated
+    annotations:
+      message: '{{ $labels.cluster }} 集群容器组 {{ $labels.namespace }}/{{ $labels.pod }} Terminated 原因是 {{ $labels.reason }}！'
+    expr: |
+      kube_pod_container_status_terminated_reason{reason!="Completed"} > 0
+    for: 1m
+    labels:
+      severity: warning
 #  - alert: K8S容器组Completed
 #    annotations:
 #      message: '{{ $labels.cluster }} 集群容器组 {{ $labels.namespace }}/{{ $labels.pod }} Terminated 原因是 {{ $labels.reason }}！'
 #    expr: |
 #      kube_pod_container_status_terminated_reason{reason="Completed"} > 0
-#    for: 15m
+#    for: 5m
 #    labels:
 #      severity: none
   - alert: K8S容器组Waiting
@@ -30,7 +30,7 @@ groups:
       message: '{{ $labels.cluster }} 集群容器组 {{ $labels.namespace }}/{{ $labels.pod }} Waiting 原因是 {{ $labels.reason }}！'
     expr: |
       kube_pod_container_status_waiting_reason{reason!="ContainerCreating"} > 0
-    for: 3m
+    for: 1m
     labels:
       severity: critical
   - alert: K8S容器组调度失败
@@ -38,53 +38,53 @@ groups:
       message: '{{ $labels.cluster }} 集群容器组 {{ $labels.namespace }}/{{ $labels.pod }} 无符合预期工作节点，无法被调度！'
     expr: |
       sum by (cluster,pod) (kube_pod_status_unschedulable) > 0
-    for: 5m
+    for: 1m
     labels:
       severity: critical
   - alert: K8S容器组NotReady
     annotations:
-      message: '{{ $labels.cluster }} 集群 {{ $labels.namespace }}/{{ $labels.pod }} 已处于 non-ready 状态超过10分钟！'
+      message: '{{ $labels.cluster }} 集群 {{ $labels.namespace }}/{{ $labels.pod }} 已处于 non-ready 状态超过3分钟！'
     expr: |
       sum by (namespace, pod, cluster) (max by(namespace, pod, cluster) (kube_pod_status_phase{job="kube-state-metrics", phase=~"Pending|Unknown"}) * on(namespace, pod, cluster) group_left(owner_kind) max by(namespace, pod, owner_kind, cluster) (kube_pod_owner{owner_kind!="Job"})) > 0
-    for: 10m
+    for: 3m
     labels:
       severity: critical
   - alert: K8S部署状态异常
     annotations:
-      message: '{{ $labels.cluster }} 集群部署的 {{ $labels.namespace }}/{{ $labels.deployment }} 状态异常，部分实例不可用已达10分钟！'
+      message: '{{ $labels.cluster }} 集群部署的 {{ $labels.namespace }}/{{ $labels.deployment }} 状态异常，部分实例不可用已达1分钟！'
     expr: |
       kube_deployment_status_replicas_unavailable{cluster="prod"} != 0
-    for: 10m
+    for: 1m
     labels:
       severity: warning
   - alert: K8S部署版本号不匹配
     annotations:
-      message: '{{ $labels.cluster }} 集群部署的 {{ $labels.namespace }}/{{ $labels.deployment }} 部署版本号不匹配，这表明部署的部署过程失败，并且没有回滚达15分钟！'
+      message: '{{ $labels.cluster }} 集群部署的 {{ $labels.namespace }}/{{ $labels.deployment }} 部署版本号不匹配，这表明部署的部署过程失败，并且没有回滚达3分钟！'
     expr: |
       kube_deployment_status_observed_generation{job="kube-state-metrics"}
         !=
       kube_deployment_metadata_generation{job="kube-state-metrics"}
-    for: 15m
+    for: 3m
     labels:
       severity: critical
   - alert: K8S部署实际副本数与预期数不匹配
     annotations:
-      message: '{{ $labels.cluster }} 集群部署 {{ $labels.namespace }}/{{ $labels.deployment }} 部署的实际副本数与预期数不匹配超过15分钟！'
+      message: '{{ $labels.cluster }} 集群部署 {{ $labels.namespace }}/{{ $labels.deployment }} 部署的实际副本数与预期数不匹配超过2分钟！'
     expr: |
       kube_deployment_spec_replicas{job="kube-state-metrics"}
         !=
       kube_deployment_status_replicas_available{job="kube-state-metrics"}
-    for: 15m
+    for: 2m
     labels:
       severity: critical
   - alert: K8S有状态部署实际副本数与预期数不匹配
     annotations:
-      message: '{{ $labels.cluster }} 集群有状态部署 {{ $labels.namespace }}/{{ $labels.deployment }} 有状态部署的实际副本数与预期数不匹配超过15分钟！'
+      message: '{{ $labels.cluster }} 集群有状态部署 {{ $labels.namespace }}/{{ $labels.deployment }} 有状态部署的实际副本数与预期数不匹配超过2分钟！'
     expr: |
       kube_statefulset_status_replicas_ready{job="kube-state-metrics"}
         !=
       kube_statefulset_status_replicas{job="kube-state-metrics"}
-    for: 15m
+    for: 2m
     labels:
       severity: critical
   - alert: K8S有状态部署版本号不匹配
@@ -94,7 +94,7 @@ groups:
       kube_statefulset_status_observed_generation{job="kube-state-metrics"}
         !=
       kube_statefulset_metadata_generation{job="kube-state-metrics"}
-    for: 15m
+    for: 2m
     labels:
       severity: critical
   - alert: K8S有状态部署更新未展开
@@ -112,7 +112,7 @@ groups:
           !=
         kube_statefulset_status_replicas_updated{job="kube-state-metrics"}
       )
-    for: 15m
+    for: 2m
     labels:
       severity: critical
   - alert: K8S守护进程集展开失败
@@ -122,17 +122,17 @@ groups:
       kube_daemonset_status_number_ready{job="kube-state-metrics"}
         /
       kube_daemonset_status_desired_number_scheduled{job="kube-state-metrics"} < 1.00
-    for: 15m
+    for: 2m
     labels:
       severity: critical
-#  - alert: K8S容器等待中
-#    annotations:
-#      message: '{{ $labels.cluster }} 集群容器组 {{ $labels.namespace }}/{{ $labels.pod }} 中的 {{ $labels.container}} 容器已经再等待状态超过1小时！'
-#    expr: |
-#      sum by (cluster, namespace, pod, container) (kube_pod_container_status_waiting_reason{job="kube-state-metrics"}) > 0
-#    for: 1h
-#    labels:
-#      severity: warning
+  - alert: K8S容器等待中
+    annotations:
+      message: '{{ $labels.cluster }} 集群容器组 {{ $labels.namespace }}/{{ $labels.pod }} 中的 {{ $labels.container}} 容器已经再等待状态超过2分钟！'
+    expr: |
+      sum by (cluster, namespace, pod, container) (kube_pod_container_status_waiting_reason{job="kube-state-metrics"}) > 0
+    for: 2m
+    labels:
+      severity: warning
   - alert: K8S守护进程集未被调度
     annotations:
       message: '{{ $labels.cluster }} 集群守护进程集 {{ $labels.namespace }}/{{ $labels.daemonset }} 的 {{ $value }} 个容器组没有被调度！'
@@ -140,7 +140,7 @@ groups:
       kube_daemonset_status_desired_number_scheduled{job="kube-state-metrics"}
         -
       kube_daemonset_status_current_number_scheduled{job="kube-state-metrics"} > 0
-    for: 10m
+    for: 2m
     labels:
       severity: warning
   - alert: K8S守护进程集调度错误
@@ -148,7 +148,7 @@ groups:
       message: '{{ $labels.cluster }} 集群守护进程集 {{ $labels.namespace }}/{{ $labels.daemonset }} 的 {{ $value }} 个非预期的容器组正在运行！'
     expr: |
       kube_daemonset_status_number_misscheduled{job="kube-state-metrics"} > 0
-    for: 10m
+    for: 1m
     labels:
       severity: warning
   - alert: K8S定时任务运行中
@@ -172,19 +172,19 @@ groups:
       message: '{{ $labels.cluster }} 集群任务 {{ $labels.namespace }}/{{ $labels.cronjob }} 已经失败！'
     expr: |
       kube_job_failed{job="kube-state-metrics"}  > 0
-    for: 15m
+    for: 1m
     labels:
       severity: warning
   - alert: K8S的HPA副本数不匹配
     annotations:
-      message: '{{ $labels.cluster }} 集群HPA {{ $labels.namespace }}/{{ $labels.hpa }} 与预期副本数不匹配已经超过15分钟！'
+      message: '{{ $labels.cluster }} 集群HPA {{ $labels.namespace }}/{{ $labels.hpa }} 与预期副本数不匹配已经超过2分钟！'
     expr: |
       (kube_hpa_status_desired_replicas{job="kube-state-metrics"}
         !=
       kube_hpa_status_current_replicas{job="kube-state-metrics"})
         and
       changes(kube_hpa_status_current_replicas[15m]) == 0
-    for: 15m
+    for: 2m
     labels:
       severity: warning
   - alert: 侦测到K8S的HPA缩容
@@ -213,12 +213,12 @@ groups:
       severity: none
   - alert: K8S工作负载的HPA保持满载
     annotations:
-      message: '{{ $labels.cluster }} 集群 HPA {{ $labels.namespace }}/{{ $labels.hpa }} 以限制最大副本数满载运行超过了15分钟！'
+      message: '{{ $labels.cluster }} 集群 HPA {{ $labels.namespace }}/{{ $labels.hpa }} 以限制最大副本数满载运行超过了2分钟！'
     expr: |
       kube_hpa_status_current_replicas{job="kube-state-metrics"}
         ==
       kube_hpa_spec_max_replicas{job="kube-state-metrics"}
-    for: 15m
+    for: 2m
     labels:
       severity: none
   - alert: K8S部署服务版本变更通告

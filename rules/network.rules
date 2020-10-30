@@ -28,7 +28,7 @@ groups:
       message: '{{ $labels.cluster }} 集群 {{ $labels.instance }} 节点的网络设备 {{ $labels.device }} 再过去2分钟内侦测到 {{ printf "%.0f" $value }} 的下载错误！'
     expr: |
       increase(node_network_receive_errs_total[2m]) > 10
-    for: 5m
+    for: 2m
     labels:
       severity: warning
   - alert: 节点上行网络错误
@@ -36,7 +36,7 @@ groups:
       message: '{{ $labels.cluster }} 集群 {{ $labels.instance }} 节点的网络设备 {{ $labels.device }} 再过去2分钟内侦测到 {{ printf "%.0f" $value }} 的上传错误！'
     expr: |
       increase(node_network_transmit_errs_total[2m]) > 10
-    for: 5m
+    for: 2m
     labels:
       severity: warning
   - alert: 节点下行带宽过高
@@ -44,7 +44,7 @@ groups:
       message: '{{ $labels.cluster }} 集群 {{ $labels.instance }} 节点的网络设备 {{ $labels.device }} 下载带宽超过 > 100MB/s'
     expr: |
       sum by (icluster,instance) (irate(node_network_receive_bytes_total[2m])) / 1024 / 1024 > 100
-    for: 5m
+    for: 2m
     labels:
       severity: warning
   - alert: 节点上行带宽过高
@@ -52,7 +52,7 @@ groups:
       message: '{{ $labels.cluster }} 集群 {{ $labels.instance }} 节点的网络设备 {{ $labels.device }} 上传带宽超过 > 100MB/s'
     expr: |
       sum by (cluster,instance) (irate(node_network_transmit_bytes_total[2m])) / 1024 / 1024 > 100
-    for: 5m
+    for: 2m
     labels:
       severity: warning
   - alert: 节点下行丢包率过高

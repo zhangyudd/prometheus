@@ -8,7 +8,7 @@ groups:
       # Without max_over_time, failed scrapes could create false negatives, see
       # https://www.robustperception.io/alerting-on-gauges-in-prometheus-2-0 for details.
       max_over_time(prometheus_config_last_reload_successful{job="prometheus-k8s",namespace="monitoring"}[5m]) == 0
-    for: 10m
+    for: 1m
     labels:
       severity: critical
   - alert: Prometheus通知队列已满
@@ -23,7 +23,7 @@ groups:
       >
         min_over_time(prometheus_notifications_queue_capacity{job="prometheus-k8s",namespace="monitoring"}[5m])
       )
-    for: 15m
+    for: 2m
     labels:
       severity: warning
   - alert: Prometheus在推送警报时发生错误
@@ -37,7 +37,7 @@ groups:
       )
       * 100
       > 1
-    for: 15m
+    for: 2m
     labels:
       severity: warning
   - alert: Prometheus在推送警报时全部错误
@@ -51,7 +51,7 @@ groups:
       )
       * 100
       > 3
-    for: 15m
+    for: 2m
     labels:
       severity: critical
   - alert: Prometheus未连接Alertmanagers
@@ -59,7 +59,7 @@ groups:
       message: '{{ $labels.cluster }} 集群 Prometheus {{$labels.namespace}}/{{$labels.pod}} 没有连接到任何 Alertmanagers！'
     expr: |
       max_over_time(prometheus_notifications_alertmanagers_discovered{job="prometheus"}[5m]) < 1
-    for: 10m
+    for: 2m
     labels:
       severity: warning
   - alert: PrometheusTSDB重载失败
@@ -67,7 +67,7 @@ groups:
       message: '{{ $labels.cluster }} 集群在过去的3小时内 Prometheus {{$labels.namespace}}/{{$labels.pod}} 侦测到 {{$value | humanize}} 个重载错误！'
     expr: |
       increase(prometheus_tsdb_reloads_failures_total{job="prometheus-k8s",namespace="monitoring"}[3h]) > 0
-    for: 4h
+    for: 5m
     labels:
       severity: warning
   - alert: PrometheusTSDB压缩失败
@@ -75,7 +75,7 @@ groups:
       message: '{{ $labels.cluster }} 集群在过去的3小时内 Prometheus {{$labels.namespace}}/{{$labels.pod}} has detected {{$value | humanize}} 个压缩错误！'
     expr: |
       increase(prometheus_tsdb_compactions_failed_total{job="prometheus-k8s",namespace="monitoring"}[3h]) > 0
-    for: 4h
+    for: 5m
     labels:
       severity: warning
   - alert: Prometheus没有采集到数据样本
@@ -83,7 +83,7 @@ groups:
       message: '{{ $labels.cluster }} 集群 Prometheus {{$labels.namespace}}/{{$labels.pod}} 没有采集到数据样本！'
     expr: |
       rate(prometheus_tsdb_head_samples_appended_total{job="prometheus-k8s",namespace="monitoring"}[5m]) <= 0
-    for: 10m
+    for: 30m
     labels:
       severity: warning
   - alert: Prometheus重复的时间戳
@@ -154,7 +154,7 @@ groups:
       message: '{{ $labels.cluster }} 集群在5分钟内 Prometheus {{$labels.namespace}}/{{$labels.pod}} 评估 {{ printf "%.0f" $value }} 条的规则失败！'
     expr: |
       increase(prometheus_rule_evaluation_failures_total{job="prometheus-k8s",namespace="monitoring"}[5m]) > 0
-    for: 15m
+    for: 1m
     labels:
       severity: critical
   - alert: Prometheus缺少规则评估
@@ -162,6 +162,6 @@ groups:
       message: '{{ $labels.cluster }} 集群在过去5分钟内 Prometheus {{$labels.namespace}}/{{$labels.pod}} 错过了 {{ printf "%.0f" $value }} 规则组评估！'
     expr: |
       increase(prometheus_rule_group_iterations_missed_total{job="prometheus-k8s",namespace="monitoring"}[5m]) > 0
-    for: 15m
+    for: 5m
     labels:
       severity: warning

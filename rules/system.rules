@@ -38,7 +38,7 @@ groups:
       and
         node_filesystem_readonly{job="node-exporter",fstype!=""} == 0
       )
-    for: 1h
+    for: 10m
     labels:
       severity: warning
   - alert: 节点文件系统只剩下不到3%
@@ -50,7 +50,7 @@ groups:
       and
         node_filesystem_readonly{job="node-exporter",fstype!=""} == 0
       )
-    for: 1h
+    for: 10m
     labels:
       severity: critical
   - alert: 节点挂载的文件系统空闲的文件节点个数24小时内用完
@@ -90,7 +90,7 @@ groups:
       and
         node_filesystem_readonly{job="node-exporter",fstype!=""} == 0
       )
-    for: 1h
+    for: 10m
     labels:
       severity: warning
   - alert: 节点挂载的文件系统空闲的文件节点个数不到3%
@@ -102,7 +102,7 @@ groups:
       and
         node_filesystem_readonly{job="node-exporter",fstype!=""} == 0
       )
-    for: 1h
+    for: 10m
     labels:
       severity: critical
   - alert: 节点CPU使用大于85%
@@ -125,7 +125,7 @@ groups:
       message: '{{ $labels.cluster }} 集群 {{ $labels.instance }} 节点侦测到 OOM 行为！'
     expr: |
       increase(node_vmstat_oom_kill[5m]) > 0
-    for: 3m
+    for: 1m
     labels:
       severity: critical
 #  - alert: 节点侦测到文件描述符切换次数过高

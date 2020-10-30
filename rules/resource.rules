@@ -10,7 +10,7 @@ groups:
       sum(kube_node_status_allocatable_cpu_cores)
         >
       (count(kube_node_status_allocatable_cpu_cores)-1) / count(kube_node_status_allocatable_cpu_cores)
-    for: 5m
+    for: 1m
     labels:
       severity: warning
   - alert: K8S的内存Requests过载
@@ -24,7 +24,7 @@ groups:
       (count(kube_node_status_allocatable_memory_bytes)-1)
         /
       count(kube_node_status_allocatable_memory_bytes)
-    for: 5m
+    for: 1m
     labels:
       severity: warning
   - alert: K8S工作节点的CPURequests过载
@@ -32,7 +32,7 @@ groups:
       message: '{{ $labels.cluster }} 集群容器组对节点 {{ $labels.node }} 的 CPU 资源 Requests 以达到 {{ printf "%.0f" $value }}%！'
     expr: |
       sum by (node,cluster) (kube_pod_container_resource_requests_cpu_cores) / sum by (node,cluster) (node:node_num_cpu:sum) * 100 > 95
-    for: 5m
+    for: 1m
     labels:
       severity: warning
   - alert: K8S工作节点的平均CPURequests过载
@@ -40,7 +40,7 @@ groups:
       message: '{{ $labels.cluster }} 集群容器组对节点 {{ $labels.node }} 的 CPU 资源平均 Requests 以达到 {{ printf "%.0f" $value }}%，可能导致无法调度，{{ $labels.cluster }} 集群可能需要扩容！'
     expr: |
       avg by (cluster) (sum by (node,cluster) (kube_pod_container_resource_requests_cpu_cores) / sum by (node,cluster) (node:node_num_cpu:sum)) * 100 > 90
-    for: 5m
+    for: 1m
     labels:
       severity: warning
   - alert: K8S工作节点内存Requests过载
@@ -65,7 +65,7 @@ groups:
         /
       sum(kube_node_status_allocatable_cpu_cores)
         > 1.5
-    for: 5m
+    for: 1m
     labels:
       severity: warning
   - alert: K8S的命名空间内存过载
@@ -76,7 +76,7 @@ groups:
         /
       sum(kube_node_status_allocatable_memory_bytes{job="node-exporter"})
         > 1.5
-    for: 5m
+    for: 1m
     labels:
       severity: warning
   - alert: K8S超过配额
@@ -87,7 +87,7 @@ groups:
         / ignoring(instance, job, type)
       (kube_resourcequota{job="kube-state-metrics", type="hard"} > 0)
         > 0.90
-    for: 15m
+    for: 1m
     labels:
       severity: warning
   - alert: 有受限的CPU(CPU节流)
@@ -98,7 +98,7 @@ groups:
         /
       sum(increase(container_cpu_cfs_periods_total{}[5m])) by (container, pod, namespace,cluster)
         > ( 100 / 100 )
-    for: 15m
+    for: 1m
     labels:
       severity: warning
   - alert: K8S容器组CPULimits%使用率高
@@ -106,7 +106,7 @@ groups:
       message: '{{ $labels.cluster }} 集群命名空间 {{ $labels.namespace }} 的容器组 {{ $labels.pod }} 中的容器 {{ $labels.container }} CPU Limits %达到 {{ $value | humanizePercentage }} ！'
     expr: |
       sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate) by (container,pod,namespace,cluster) / sum(kube_pod_container_resource_limits_cpu_cores) by (container,pod,namespace,cluster) > 1
-    for: 15m
+    for: 1m
     labels:
       severity: warning
   - alert: K8S容器组内存Limits%使用率高 
@@ -114,7 +114,7 @@ groups:
       message: '{{ $labels.cluster }} 集群命名空间 {{ $labels.namespace }} 的容器组 {{ $labels.pod }} 中的容器 {{ $labels.container }} 内存 Limits% 达到 {{ $value | humanizePercentage }} ！'
     expr: |
       sum(container_memory_working_set_bytes) by (container,pod,namespace,cluster) / sum(kube_pod_container_resource_limits_memory_bytes) by (container,pod,namespace,cluster) > 1
-    for: 15m
+    for: 1m
     labels:
       severity: warning
 #  - alert: K8S工作负载的HPA保持满载并且资源平均利用率高
@@ -134,7 +134,7 @@ groups:
       message: '{{ $labels.cluster }} 集群命名空间 {{ $labels.namespace }} 的 {{ $labels.workload_type }} 工作负载 {{ $labels.workload }} CPU Limits% 达到 {{ $value | humanizePercentage }} 可能触发 HPA！'
     expr: |
       sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_rate * on(namespace,pod,cluster) group_left(workload, workload_type) mixin_pod_workload) by (workload,workload_type,cluster,namespace) / sum(kube_pod_container_resource_limits_cpu_cores * on(namespace,pod,cluster) group_left(workload, workload_type) mixin_pod_workload) by (workload, workload_type,cluster,namespace) > 3.5
-    for: 15m
+    for: 1m
     labels:
       severity: warning
   - alert: K8S工作负载CPURequests%使用率达HPA扩容阈值
@@ -171,7 +171,7 @@ groups:
       message: '{{ $labels.cluster }} 集群命名空间 {{ $labels.namespace }} 的 {{ $labels.workload_type }} 工作负载 {{ $labels.workload }} 内存 Limits% 达到 {{ $value | humanizePercentage }} 可能触发 HPA！'
     expr: |
       sum(container_memory_working_set_bytes * on(namespace,pod,container,cluster) group_left(workload, workload_type) mixin_pod_workload) by (workload, workload_type,cluster,namespace) / sum(kube_pod_container_resource_limits_memory_bytes * on(namespace,pod,cluster) group_left(workload, workload_type) mixin_pod_workload) by (workload, workload_type,cluster,namespace) > 1
-    for: 15m 
+    for: 1m 
     labels:
       severity: warning
   - alert: K8S工作负载内存Requests%使用率达HPA扩容阈值
