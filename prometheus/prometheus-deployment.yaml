@@ -45,15 +45,15 @@ spec:
           value: Asia/Shanghai        
         volumeMounts:
         - mountPath: "/prometheus"
-          name: prometheus-kube-system-disk
-          subPath: prometheus
+          name: prometheus-kube-system
+          subPath: prometheus-devops-dispute
         - mountPath: "/etc/prometheus"
           name: config-volume
       serviceAccountName: prometheus    
       volumes:
-      - name: prometheus-kube-system-disk
+      - name: prometheus-kube-system
         persistentVolumeClaim:
-          claimName: prometheus-kube-system-disk
+          claimName: prometheus
       - name: config-volume
         configMap:
           name: prometheus-config
