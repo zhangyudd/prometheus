@@ -1,5 +1,5 @@
 groups:
-- interval: 3m
+- interval: 1m
   name: kube-apiserver-availability.rules
   rules:
   - expr: |-

@@ -6,7 +6,7 @@ groups:
       message: '{{ $labels.cluster }} 集群K8S节点 {{ $labels.node }} 处于未就绪状态已超过2分钟！'
     expr: |
       kube_node_status_condition{job="kube-state-metrics",condition="Ready",status="true"} == 0
-    for: 2m
+    for: 1m
     labels:
       severity: warning
   - alert: KubeletPlegDurationHigh
@@ -16,7 +16,7 @@ groups:
       runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeletplegdurationhigh
     expr: node_quantile:kubelet_pleg_relist_duration_seconds:histogram_quantile{quantile="0.99"}
       >= 10
-    for: 5m
+    for: 2m
     labels:
       severity: warning
   - alert: KubeletPodStartUpLatencyHigh

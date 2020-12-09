@@ -13,7 +13,7 @@ groups:
         )
       )
       > 0
-    for: 3m
+    for: 1m
     labels:
       severity: critical
   - alert: etcdInsufficientMembers
@@ -22,7 +22,7 @@ groups:
         }}).'
     expr: sum(up{job=~".*etcd.*"} == bool 1) by (job) < ((count(up{job=~".*etcd.*"})
       by (job) + 1) / 2)
-    for: 3m
+    for: 1m
     labels:
       severity: critical
   - alert: etcdNoLeader
@@ -41,7 +41,7 @@ groups:
     expr: increase((max by (job) (etcd_server_leader_changes_seen_total{job=~".*etcd.*"})
       or 0*absent(etcd_server_leader_changes_seen_total{job=~".*etcd.*"}))[15m:1m])
       >= 3
-    for: 5m
+    for: 2m
     labels:
       severity: warning
   - alert: etcdHighNumberOfFailedGRPCRequests
