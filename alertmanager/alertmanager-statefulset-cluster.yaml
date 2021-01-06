@@ -29,15 +29,21 @@ spec:
         - effect: NoSchedule
           key: node-role.kubernetes.io/master
       affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
+        # podAntiAffinity:
+        #   requiredDuringSchedulingIgnoredDuringExecution:
+        #   - labelSelector:
+        #       matchExpressions:
+        #       - key: k8s-app
+        #         operator: In
+        #         values:
+        #         - alertmanager
+        #     topologyKey: "kubernetes.io/hostname"
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 60
+            preference:
               matchExpressions:
-              - key: k8s-app
-                operator: In
-                values:
-                - alertmanager
-            topologyKey: "kubernetes.io/hostname"
+              - {key: devops-node, operator: In, values: ["beijing-node"]}
       containers:
         - name: prometheus-alertmanager
           image: "prom/alertmanager:v0.21.0"
