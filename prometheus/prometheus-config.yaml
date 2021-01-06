@@ -154,16 +154,19 @@ data:
     - job_name: 'blackbox-k8s-http-services'
       scrape_interval: 30s
       scrape_timeout: 10s
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      kubernetes_sd_configs:
+      - role: service  # service 类型的服务发现
       metrics_path: /probe
       params:
         module: [http_2xx]  # 使用定义的http模块
-      kubernetes_sd_configs:
-      - role: service  # service 类型的服务发现
       relabel_configs:
       # 只有service的annotation中配置了 prometheus.io/http_probe=true 的才进行发现
-      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_http_probe]
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape,__meta_kubernetes_service_annotation_prometheus_io_http_probe]
         action: keep
-        regex: true
+        regex: true;true
       - source_labels: [__meta_kubernetes_service_name, __meta_kubernetes_namespace, __meta_kubernetes_service_annotation_prometheus_io_http_probe_port, __meta_kubernetes_service_annotation_prometheus_io_http_probe_path]
         action: replace
         target_label: __param_target
@@ -174,28 +177,31 @@ data:
       - source_labels: [__param_target]
         target_label: instance
       - action: labelmap
-        regex: __meta_kubernetes_service_label_(.+)
+        regex: __meta_kubernetes_service_annotation_prometheus_io_app_info_(.+)
       - source_labels: [__meta_kubernetes_namespace]
         target_label: kubernetes_namespace
       - source_labels: [__meta_kubernetes_service_name]
         target_label: kubernetes_name
 
     - job_name: 'blackbox-k8s-tcp-services'
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      kubernetes_sd_configs:
+      - role: service  # service 类型的服务发现
       metrics_path: /probe
       params:
         module: [tcp_connect]  # 使用定义的http模块
-      kubernetes_sd_configs:
-      - role: service  # service 类型的服务发现
       relabel_configs:
       # 只有service的annotation中配置了 prometheus.io/http_probe=true 的才进行发现
-      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_http_probe]
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape, __meta_kubernetes_service_annotation_prometheus_io_tcp_probe]
         action: keep
         regex: true
-      - source_labels: [__meta_kubernetes_service_name, __meta_kubernetes_namespace, __meta_kubernetes_service_annotation_prometheus_io_http_probe_port, __meta_kubernetes_service_annotation_prometheus_io_http_probe_path]
+      - source_labels: [__meta_kubernetes_service_name, __meta_kubernetes_namespace, __meta_kubernetes_service_annotation_prometheus_io_tcp_probe_port]
         action: replace
         target_label: __param_target
-        regex: (.+);(.+);(.+);(.+)
-        replacement: $1.$2:$3$4
+        regex: (.+);(.+);(.+)
+        replacement: $1.$2:$3
       - target_label: __address__
         replacement: blackbox:9115
       - source_labels: [__param_target]
