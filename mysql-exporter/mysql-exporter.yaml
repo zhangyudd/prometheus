@@ -39,7 +39,7 @@ spec:
           - name: DATA_SOURCE_NAME
           ## GRANT REPLICATION CLIENT, PROCESS ON *.* TO 'exporter'@'localhost' identified by '123456';
           ## GRANT SELECT ON performance_schema.* TO 'exporter'@'localhost';
-            value: "exporter:bJCx#4A5#IOGNV!2@(rm-2ze1h74718vlh39pv.mysql.rds.aliyuncs.com:30230)/"
+            value: "user:password@(ip:port)/"
         image: prom/mysqld-exporter
         ports:
         - containerPort: 9104
