@@ -45,6 +45,24 @@ data:
         target_label: __metrics_path__
         replacement: /api/v1/nodes/${1}/proxy/metrics
 
+    - job_name: 'kubernetes-node-exporter'
+      scheme: http
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      kubernetes_sd_configs:
+      - role: node
+      relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - source_labels: [__meta_kubernetes_role]
+        action: replace
+        target_label: kubernetes_role
+      - source_labels: [__address__]
+        regex: '(.*):10250'
+        replacement: '${1}:31672'
+        target_label: __address__
+
     - job_name: 'kubernetes-cadvisor'
       kubernetes_sd_configs:
       - role: node
@@ -115,24 +133,6 @@ data:
       - source_labels: [__meta_kubernetes_pod_name]
         action: replace
         target_label: kubernetes_pod_name
-
-    - job_name: 'kubernetes-node-exporter'
-      scheme: http
-      tls_config:
-        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-      kubernetes_sd_configs:
-      - role: node
-      relabel_configs:
-      - action: labelmap
-        regex: __meta_kubernetes_node_label_(.+)
-      - source_labels: [__meta_kubernetes_role]
-        action: replace
-        target_label: kubernetes_role
-      - source_labels: [__address__]
-        regex: '(.*):10250'
-        replacement: '${1}:31672'
-        target_label: __address__
 
     - job_name: "blackbox-k8s-service-dns"
       scrape_interval: 30s
@@ -213,35 +213,38 @@ data:
       - source_labels: [__meta_kubernetes_service_name]
         target_label: kubernetes_name
 
+    # - job_name: 'mysql performance'
+    #   scrape_interval: 1m
+    #   static_configs:
+    #     - targets:
+    #        ['mysqld-exporter:9104']
+    #   params:
+    #     collect[]:
+    #       - global_status
+    #       - perf_schema.tableiowaits
+    #       - perf_schema.indexiowaits 
+    #       - perf_schema.tablelocks
 
-
-    #- job_name: 'blackbox-k8s-ingresses'
-    #  scrape_interval: 30s
-    #  scrape_timeout: 10s
-    #  metrics_path: /probe
-    #  params:
-    #    module: [http_2xx]  # 使用定义的http模块
-    #  kubernetes_sd_configs:
-    #  - role: ingress  # ingress 类型的服务发现
-    #  relabel_configs:
-    #  # 只有ingress的annotation中配置了 prometheus.io/http_probe=true 的才进行发现
-    #  - source_labels: [__meta_kubernetes_ingress_annotation_prometheus_io_http_probe]
-    #    action: keep
-    #    regex: true
-    #  - source_labels: [__meta_kubernetes_ingress_scheme,__address__,__meta_kubernetes_ingress_path]
-    #    regex: (.+);(.+);(.+)
-    #    replacement: ${1}://${2}${3}
-    #    target_label: __param_target
-    #  - target_label: __address__
-    #    replacement: blackbox:9115
-    #  - source_labels: [__param_target]
-    #    target_label: instance
-    #  - action: labelmap
-    #    regex: __meta_kubernetes_ingress_label_(.+)
-    #  - source_labels: [__meta_kubernetes_namespace]
-    #    target_label: kubernetes_namespace
-    #  - source_labels: [__meta_kubernetes_ingress_name]
-    #    target_label: kubernetes_name
+    #######  mysql 自动发现配置
+    - job_name: 'kube_svc_mysql-exporter'
+      kubernetes_sd_configs:
+      - role: service
+      metrics_path: /metrics
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_probe]
+        action: keep
+        regex: true
+        # 匹配svc.metadata.annotation字段包含key/value(prometheus.io/probe: "true")
+      - source_labels: [__meta_kubernetes_service_port_name]
+        action: keep
+        regex: "mysql-exporter"
+        # 匹配svc.spec.ports.name 是否包含mysql-exporter
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_service_name]
+        target_label: kubernetes_name
 
     #- job_name: "blackbox-external-website"
     #  scrape_interval: 30s

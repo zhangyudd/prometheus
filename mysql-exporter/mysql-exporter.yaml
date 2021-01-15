@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysqld-exporter
+  namespace: kube-system
+  labels:
+    app: mysqld-exporter
+  annotations:
+    prometheus.io/probe: 'true'
+spec:
+  ports:
+  - name: mysql-exporter    # 作为自动发现条件
+    port: 9104
+    protocol: TCP
+    targetPort: 9104
+  selector:
+    app: mysqld-exporter
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysqld-exporter
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysqld-exporter
+  template:
+    metadata:
+      labels:
+        app: mysqld-exporter
+        grafana_template: "7362"
+    spec:
+      containers:
+      - name: mysqld-exporter
+        imagePullPolicy: Always
+        env:
+          - name: DATA_SOURCE_NAME
+          ## GRANT REPLICATION CLIENT, PROCESS ON *.* TO 'exporter'@'localhost' identified by '123456';
+          ## GRANT SELECT ON performance_schema.* TO 'exporter'@'localhost';
+            value: "exporter:bJCx#4A5#IOGNV!2@(rm-2ze1h74718vlh39pv.mysql.rds.aliyuncs.com:30230)/"
+        image: prom/mysqld-exporter
+        ports:
+        - containerPort: 9104
+          name: mysqld-exporter
