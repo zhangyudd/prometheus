@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-redis-exporter
+spec:
+  selector:
+    app: prometheus-redis-exporter
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-redis-exporter
+  labels:
+    app: prometheus-redis-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-redis-exporter
+  template:
+    metadata:
+      annotations:
+        {}
+      labels:
+        app: prometheus-redis-exporter
+    spec:
+      serviceAccountName: prometheus-redis-exporter
+      containers:
+        - name: prometheus-redis-exporter
+          image: "oliver006/redis_exporter:v1.11.1"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: exporter-port
+              containerPort: 9121
+          env:
+            - name: REDIS_ADDR
+              value: redis://redis-cluster-0.default.redis-cluster.svc.cluster.local:6379
+            - name: REDIS_PASSWORD
+              value: passwd123
+          resources:
+            requests:
+              memory: 10M
+            limits:
+              memory: 50M

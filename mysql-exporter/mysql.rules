@@ -1,5 +1,5 @@
 groups:
-- name: MySQLStatsAlert
+- name: MySQL 状态告警
   rules:
   - alert: MySQL is down
     expr: mysql_up == 0
@@ -9,7 +9,7 @@ groups:
     annotations:
       summary: "Instance {{ $labels.instance }} MySQL is down"
       description: "MySQL database is down. This requires immediate action!"
-  - alert: open files high
+  - alert: Mysql 打开的文件数高
     expr: mysql_global_status_innodb_num_open_files > (mysql_global_variables_open_files_limit) * 0.75
     for: 1m
     labels:
@@ -41,7 +41,7 @@ groups:
     annotations:
       summary: "Instance {{ $labels.instance }} Thread stack size is too small"
       description: "Thread stack size is too small. This can cause problems when you use Stored Language constructs for example. A typical is 256k for thread_stack_size."
-  - alert: Used more than 80% of max connections limited 
+  - alert: 连接数超过限制的80%
     expr: mysql_global_status_max_used_connections > mysql_global_variables_max_connections * 0.8
     for: 1m
     labels:
