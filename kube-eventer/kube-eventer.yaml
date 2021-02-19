@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    name: kube-eventer
+  name: kube-eventer
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kube-eventer
+  template:
+    metadata:
+      labels:
+        app: kube-eventer
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      serviceAccount: kube-eventer
+      containers:
+        - image: registry.aliyuncs.com/acs/kube-eventer-amd64:v1.2.0-484d9cd-aliyun
+          name: kube-eventer
+          command:
+            - "/kube-eventer"
+            - "--source=kubernetes:https://kubernetes.default"
+            ## .e.g,dingtalk sink demo
+            # - --sink=dingtalk:[your_webhook_url]&label=[your_cluster_id]&level=[可选参数:Normal或者Warning，默认值为：Warning]
+            - --sink=dingtalk:https://oapi.dingtalk.com/robot/send?access_token=2d4132017ddf6b2567d26a1ca9e9e5a73548e29b421487270b06c5918476991c&label=bangyingpingtai&level=Warning
+            # - --sink=webhook:https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=07055f32-a04e-4ad7-9cb1-d22352769e1c&level=Warning&label=oa-k8s
+            # - --sink=webhook:https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=07055f32-a04e-4ad7-9cb1-d223&level=Warning&header=Content-Type=application/json&custom_body_configmap=custom-webhook-body&custom_body_configmap_namespace=kube-system&method=POST
+          env:
+          # If TZ is assigned, set the TZ value as the time zone
+          - name: TZ
+            value: "Asia/Shanghai"
+          volumeMounts:
+            - name: localtime
+              mountPath: /etc/localtime
+              readOnly: true
+            - name: zoneinfo
+              mountPath: /usr/share/zoneinfo
+              readOnly: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 50Mi
+            limits:
+              cpu: 500m
+              memory: 250Mi
+      volumes:
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+        - name: zoneinfo
+          hostPath:
+            path: /usr/share/zoneinfo
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kube-eventer
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - events
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kube-eventer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kube-eventer
+subjects:
+  - kind: ServiceAccount
+    name: kube-eventer
+    namespace: kube-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-eventer
+  namespace: kube-system
+---
+apiVersion: v1
+data:
+  content: >-
+    {"msgtype": "text","text": {"content": "EventType:{{ .Type }}\nEventNamespace:{{ .InvolvedObject.Namespace }}\nEventKind:{{ .InvolvedObject.Kind }}\nEventObject:{{ .InvolvedObject.Name }}\nEventReason:{{ .Reason }}\nEventTime:{{ .LastTimestamp }}\nEventMessage:{{ .Message }}"}}
+kind: ConfigMap
+metadata:
+  name: custom-webhook-body
+  namespace: kube-system

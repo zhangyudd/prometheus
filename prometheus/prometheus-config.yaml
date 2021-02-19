@@ -225,7 +225,7 @@ data:
     #       - perf_schema.indexiowaits 
     #       - perf_schema.tablelocks
 
-    #######  mysql 自动发现配置
+    #######  mysql 自动发现配置 ##################
     - job_name: 'kube_svc_mysql-exporter'
       kubernetes_sd_configs:
       - role: service
@@ -239,6 +239,27 @@ data:
         action: keep
         regex: "mysql-exporter"
         # 匹配svc.spec.ports.name 是否包含mysql-exporter
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_service_name]
+        target_label: kubernetes_name
+
+    ######### redis 自动发现配置 ################
+    - job_name: 'kube_svc_redis-exporter'
+      kubernetes_sd_configs:
+      - role: service
+      metrics_path: /metrics
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_probe]
+        action: keep
+        regex: true
+        # 匹配svc.metadata.annotation字段包含key/value(prometheus.io/probe: "true")
+      - source_labels: [__meta_kubernetes_service_port_name]
+        action: keep
+        regex: "redis-exporter"
+        # 匹配svc.spec.ports.name 是否包含redis-exporter
       - action: labelmap
         regex: __meta_kubernetes_service_label_(.+)
       - source_labels: [__meta_kubernetes_namespace]
