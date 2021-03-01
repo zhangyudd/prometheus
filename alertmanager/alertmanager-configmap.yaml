@@ -20,7 +20,7 @@ data:
       group_by: ['alertname', 'cluster']
       group_wait: 10s         # 最初即第一次等待多久时间发送一组警报的通知
       group_interval: 10s     # 在发送新警报前的等待时间
-      repeat_interval: 3h     # 发送重复警报的周期 对于email配置中，此项不可以设置过低，否则将会由于邮件发送太多频繁，被smtp服务器拒绝
+      repeat_interval: 30m     # 发送重复警报的周期 对于email配置中，此项不可以设置过低，否则将会由于邮件发送太多频繁，被smtp服务器拒绝
       receiver: default       # 发送警报的接收者的名称，以下receivers name的名称
 
       routes:
@@ -37,3 +37,11 @@ data:
       email_configs:
       - to: 'edgar.z@foxmail.com'
         send_resolved: true
+        
+    ##### 告警抑制
+    # inhibit_rules:
+    #   - source_match:  # 当此告警发生，其他的告警被抑制
+    #       severity: 'critical'   
+    #     target_match:   # 被抑制的对象
+    #       severity: 'warning'  
+    #     equal: ['id', 'instance']

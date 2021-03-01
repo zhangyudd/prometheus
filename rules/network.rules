@@ -41,17 +41,17 @@ groups:
       severity: warning
   - alert: 节点下行带宽过高
     annotations:
-      message: '{{ $labels.cluster }} 集群 {{ $labels.instance }} 节点的网络设备 {{ $labels.device }} 下载带宽超过 > 100MB/s'
+      message: '{{ $labels.cluster }} 集群 {{ $labels.instance }} 节点的网络设备 {{ $labels.device }} 下载带宽超过 > 50MB/s'
     expr: |
-      sum by (icluster,instance) (irate(node_network_receive_bytes_total[2m])) / 1024 / 1024 > 100
+      sum by (icluster,instance) (irate(node_network_receive_bytes_total[2m])) / 1024 / 1024 > 50
     for: 1m
     labels:
       severity: warning
   - alert: 节点上行带宽过高
     annotations:
-      message: '{{ $labels.cluster }} 集群 {{ $labels.instance }} 节点的网络设备 {{ $labels.device }} 上传带宽超过 > 100MB/s'
+      message: '{{ $labels.cluster }} 集群 {{ $labels.instance }} 节点的网络设备 {{ $labels.device }} 上传带宽超过 > 50MB/s'
     expr: |
-      sum by (cluster,instance) (irate(node_network_transmit_bytes_total[2m])) / 1024 / 1024 > 100
+      sum by (cluster,instance) (irate(node_network_transmit_bytes_total[2m])) / 1024 / 1024 > 50
     for: 1m
     labels:
       severity: warning
