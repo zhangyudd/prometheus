@@ -61,7 +61,7 @@ spec:
       volumes:
       - name: prometheus-kube-system
         persistentVolumeClaim:
-          claimName: prometheus
+          claimName: kube-system-prometheus-pvc
       - name: config-volume
         configMap:
           name: prometheus-config
