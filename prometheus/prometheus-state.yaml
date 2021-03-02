@@ -54,7 +54,7 @@ spec:
         volumeMounts:
         - mountPath: "/prometheus"
           name: prometheus-kube-system
-          subPath: prometheus-devops-dispute
+          # subPath: prometheus-devops-dispute
         - mountPath: "/etc/prometheus"
           name: config-volume
       serviceAccountName: prometheus    
