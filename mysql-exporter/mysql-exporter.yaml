@@ -6,7 +6,9 @@ metadata:
   labels:
     app: mysqld-exporter
   annotations:
-    prometheus.io/probe: 'true'
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9104"
+    prometheus.io/scheme: "http"
 spec:
   ports:
   - name: mysql-exporter    # 作为自动发现条件

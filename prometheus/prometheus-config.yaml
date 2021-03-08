@@ -80,6 +80,14 @@ data:
         target_label: __metrics_path__
         replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
 
+    ######## endpoints 监控需要在service添加下面的字段
+    ## -------------------------------------##
+    # annotations:
+    #   prometheus.io/scrape: "true"
+    #   prometheus.io/port: "9104"
+    #   prometheus.io/scheme: "http"
+    #   prometheus.io/path: "/metrics" # 默认路径
+    ## -------------------------------------##
     - job_name: 'kubernetes-service-endpoints'
       kubernetes_sd_configs:
       - role: endpoints
@@ -109,6 +117,14 @@ data:
         action: replace
         target_label: kubernetes_name
 
+    ######## pod 监控需要在pod段下添加下面的字段
+    ## -------------------------------------##
+    # annotations:
+    #   prometheus.io/scrape: "true"
+    #   prometheus.io/port: "9104"
+    #   prometheus.io/scheme: "http"
+    #   prometheus.io/path: "/metrics" # 默认路径
+    ## -------------------------------------##
     - job_name: 'kubernetes-pods'
       kubernetes_sd_configs:
       - role: pod
@@ -151,22 +167,27 @@ data:
       - target_label: __address__
         replacement: blackbox:9115  # 服务地址，和上面的 Service 定义保持一致
 
+
+    ######## http 监控需要在service添加下面的字段
+    ## -------------------------------------##
+    # annotation:
+    #       prometheus.io/http-probe: "true"
+    #       prometheus.io/http-probe-port: "8080"
+    #       prometheus.io/http-probe-path: "/healthCheck" # 路径自定义
+    ## -------------------------------------##
     - job_name: 'blackbox-k8s-http-services'
       scrape_interval: 30s
       scrape_timeout: 10s
-      tls_config:
-        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-      kubernetes_sd_configs:
-      - role: service  # service 类型的服务发现
       metrics_path: /probe
       params:
         module: [http_2xx]  # 使用定义的http模块
+      kubernetes_sd_configs:
+      - role: service  # service 类型的服务发现
       relabel_configs:
       # 只有service的annotation中配置了 prometheus.io/http_probe=true 的才进行发现
-      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape,__meta_kubernetes_service_annotation_prometheus_io_http_probe]
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_http_probe]
         action: keep
-        regex: true;true
+        regex: true
       - source_labels: [__meta_kubernetes_service_name, __meta_kubernetes_namespace, __meta_kubernetes_service_annotation_prometheus_io_http_probe_port, __meta_kubernetes_service_annotation_prometheus_io_http_probe_path]
         action: replace
         target_label: __param_target
@@ -177,7 +198,7 @@ data:
       - source_labels: [__param_target]
         target_label: instance
       - action: labelmap
-        regex: __meta_kubernetes_service_annotation_prometheus_io_app_info_(.+)
+        regex: __meta_kubernetes_service_label_(.+)
       - source_labels: [__meta_kubernetes_namespace]
         target_label: kubernetes_namespace
       - source_labels: [__meta_kubernetes_service_name]
@@ -194,7 +215,7 @@ data:
         module: [tcp_connect]  # 使用定义的http模块
       relabel_configs:
       # 只有service的annotation中配置了 prometheus.io/http_probe=true 的才进行发现
-      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape, __meta_kubernetes_service_annotation_prometheus_io_tcp_probe]
+      - source_labels: [ __meta_kubernetes_service_annotation_prometheus_io_tcp_probe]
         action: keep
         regex: true
       - source_labels: [__meta_kubernetes_service_name, __meta_kubernetes_namespace, __meta_kubernetes_service_annotation_prometheus_io_tcp_probe_port]
@@ -267,6 +288,7 @@ data:
       - source_labels: [__meta_kubernetes_service_name]
         target_label: kubernetes_name
 
+    ############### 外部url监控，只有配置了外部url，才可以监控到https
     #- job_name: "blackbox-external-website"
     #  scrape_interval: 30s
     #  scrape_timeout: 15s
