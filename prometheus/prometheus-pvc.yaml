@@ -7,6 +7,7 @@ spec:
     storage: 100Gi
   accessModes:
     - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain #回收策略
   nfs:
     path: /prometheus-devops-dispute/
     server: xxxxxxxx.cn-beijing.nas.aliyuncs.com       # ----replace------
