@@ -1,3 +1,6 @@
+[TOC]
+---
+
 # prometheus
 
 ## prometheus 相关exporter
@@ -21,6 +24,9 @@ K8S 生态的组件都会提供/metric接口以提供自监控，这里列下我
 
 `四个黄金信号`：延迟、流量、错误数、饱和度
 
+
+##  Prometheus 通过 consul 实现自动服务发现
+[传送门](https://mp.weixin.qq.com/s?__biz=MzU4MjQ0MTU4Ng==&mid=2247490418&idx=1&sn=7c97b1cfdca17160743190178fa46111&chksm=fdb9146fcace9d79c054d8aa64d9c6825bb1620dbbde39ecf2b32a8bbdd0789937546e8722eb&scene=126&sessionid=1614246824&key=ee962fa21a68b6fee9bec60ae2cacfb0ce8fe19d372152024b982373821f8a25ffd5363ae65b758b3f068b728bba8c1a294573e03c83b17876faed8f8032b6174b34ea2fdb891169d82ebafca55bc6799db4676ee52e9ec13d69b46e976614a3c463bf78ba34dd730801251d658abdfb37b9f28afc27caaf2018e5bf7e0a8090&ascene=1&uin=MTYzNjg4OTIyMg%3D%3D&devicetype=Windows+10+x64&version=62090538&lang=zh_CN&exportkey=Ab4JHj22kp12Sp%2Bwnuxw8BQ%3D&pass_ticket=N0A8zEKP9fhjpm90MuhouL4kymC125dlY4h%2FUicqSkEgSjdBV6nB5K%2F1qZtjwD3B&wx_header=0)
 
 ## Prometheus 采集外部 K8S 集群、多集群
 Prometheus 如果部署在K8S集群内采集是很方便的，用官方给的Yaml就可以，但我们因为权限和网络需要部署在集群外，二进制运行，采集多个 K8S 集群。
